@@ -1,17 +1,29 @@
-# Awesome Walrus Template
+# Kubernetes Redis Template
 
-Start here to create an awesome Walrus template.
+Terraform template for deploying Redis on Kubernetes, which is based on [Bitnami Redis Helm Chart](https://github.com/bitnami/charts/tree/main/bitnami/redis).
 
 ## Usage
 
 ```hcl
+module "redis" {
+  source = "..."
 
+  infrastructure = {
+    namespace = "default"
+  }
+
+  deployment = {
+    version  = "6.0.5"
+    type     = "replication"
+    password = "my-password"
+  }
+}
 ```
 
 ## Examples
 
-- ...
-- ...
+- [Standalone](./examples/standalone)
+- [Replication](./examples/replication)
 
 ## Contributing
 
