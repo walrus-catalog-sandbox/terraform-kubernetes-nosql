@@ -26,6 +26,14 @@ locals {
 # Random
 #
 
+# create a random password for blank password input.
+
+resource "random_password" "password" {
+  lower   = true
+  length  = 10
+  special = false
+}
+
 # create the name with a random suffix.
 
 resource "random_string" "name_suffix" {
@@ -35,7 +43,8 @@ resource "random_string" "name_suffix" {
 }
 
 locals {
-  name = join("-", [local.resource_name, random_string.name_suffix.result])
+  name     = join("-", [local.resource_name, random_string.name_suffix.result])
+  password = coalesce(var.deployment.password, random_password.password.result)
 }
 
 #
@@ -119,7 +128,8 @@ locals {
       replicas = {
         resources = {
           requests = try(var.replication.replicas.resources.requests != null, false) ? {
-            for k, v in var.replication.replicas.resources.requests : k => "%{if k == "memory"}${v}Mi%{else}${v}%{endif}"
+            for k, v in var.replication.replicas.resources.requests : k =>
+            "%{if k == "memory"}${v}Mi%{else}${v}%{endif}"
             if v != null && v > 0
           } : null
           limits = try(var.replication.replicas.resources.limits != null, false) ? {
@@ -153,6 +163,6 @@ resource "helm_release" "redis" {
 
   set_sensitive {
     name  = "auth.password"
-    value = var.deployment.password
+    value = local.password
   }
 }

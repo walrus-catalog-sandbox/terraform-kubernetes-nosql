@@ -59,14 +59,15 @@ Examples:
 deployment:
   version: string, optional      # https://hub.docker.com/r/bitnami/redis/tags
   type: string, optional         # i.e. standalone, replication
-  password: string
+  password: string, optional
 ```
 EOF
   type = object({
     version  = optional(string, "6.0.5")
     type     = optional(string, "standalone")
-    password = string
+    password = optional(string)
   })
+  default = {}
 }
 
 #
