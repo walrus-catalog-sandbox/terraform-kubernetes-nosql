@@ -23,27 +23,9 @@ provider "helm" {
   }
 }
 
-resource "kubernetes_namespace_v1" "infra" {
+resource "kubernetes_namespace_v1" "example" {
   metadata {
     name = "standalone-svc"
-  }
-}
-
-resource "kubernetes_persistent_volume_claim_v1" "pv" {
-  wait_until_bound = false
-
-  metadata {
-    name      = "pv"
-    namespace = kubernetes_namespace_v1.infra.metadata[0].name
-  }
-
-  spec {
-    access_modes = ["ReadWriteOnce"]
-    resources {
-      requests = {
-        storage = "10Gi"
-      }
-    }
   }
 }
 
@@ -51,10 +33,10 @@ module "this" {
   source = "../.."
 
   infrastructure = {
-    namespace = kubernetes_namespace_v1.infra.metadata[0].name
+    namespace = kubernetes_namespace_v1.example.metadata[0].name
   }
 
-  standalone = {
+  deployment = {
     resources = {
       requests = {
         cpu    = 1
@@ -66,10 +48,7 @@ module "this" {
       }
     }
     storage = {
-      type = "persistent"
-      persistent = {
-        name = kubernetes_persistent_volume_claim_v1.pv.metadata[0].name
-      }
+      size = 20 * 1024
     }
   }
 }
@@ -78,8 +57,16 @@ output "context" {
   value = module.this.context
 }
 
+output "selector" {
+  value = module.this.selector
+}
+
 output "endpoint_internal" {
   value = module.this.endpoint_internal
+}
+
+output "endpoint_internal_readonly" {
+  value = module.this.endpoint_internal_readonly
 }
 
 output "password" {

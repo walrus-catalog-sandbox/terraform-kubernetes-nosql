@@ -1,6 +1,8 @@
 # Kubernetes Redis Template
 
-Terraform template for deploying Redis on Kubernetes, which is based on [Bitnami Redis Helm Chart](https://github.com/bitnami/charts/tree/main/bitnami/redis).
+Terraform module which deploys containerized Redis on Kubernetes, powered by [Bitnami Charts/Redis](https://github.com/bitnami/charts/tree/main/bitnami/redis).
+
+- [x] Support standalone and replication(for high availability).
 
 ## Usage
 
@@ -13,17 +15,17 @@ module "redis" {
   }
 
   deployment = {
-    version  = "6.0.5"
     type     = "replication"
-    password = "my-password"
+    version  = "7.0"          # https://hub.docker.com/r/bitnami/redis/tags
+    password = "..."
   }
 }
 ```
 
 ## Examples
 
-- [Standalone](./examples/standalone)
 - [Replication](./examples/replication)
+- [Standalone](./examples/standalone)
 
 ## Contributing
 
@@ -62,16 +64,15 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_context"></a> [context](#input\_context) | Receive contextual information. When Walrus deploys, Walrus will inject specific contextual information into this field.<br><br>Examples:<pre>context:<br>  project:<br>    name: string<br>    id: string<br>  environment:<br>    name: string<br>    id: string<br>  resource:<br>    name: string<br>    id: string</pre> | `map(any)` | `{}` | no |
-| <a name="input_infrastructure"></a> [infrastructure](#input\_infrastructure) | Specify the infrastructure information for deploying.<br><br>Examples:<pre>infrastructure:<br>  namespace: string, optional<br>  image_registry: string, optional</pre> | <pre>object({<br>    namespace      = optional(string)<br>    image_registry = optional(string, "registry-1.docker.io")<br>  })</pre> | `{}` | no |
-| <a name="input_deployment"></a> [deployment](#input\_deployment) | Specify the deployment action, including architecture and account.<br><br>Examples:<pre>deployment:<br>  version: string, optional      # https://hub.docker.com/r/bitnami/redis/tags<br>  type: string, optional         # i.e. standalone, replication<br>  password: string, optional</pre> | <pre>object({<br>    version  = optional(string, "6.0.5")<br>    type     = optional(string, "standalone")<br>    password = optional(string)<br>  })</pre> | `{}` | no |
-| <a name="input_standalone"></a> [standalone](#input\_standalone) | Specify the configuration of standalone deployment type.<br><br>Examples:<pre>standalone:                      # one instance<br>  resources:<br>    requests:<br>      cpu: number<br>      memory: number             # in megabyte<br>    limits:<br>      cpu: number<br>      memory: number             # in megabyte<br>  storage:                       # convert to empty dir if null<br>    type: ephemeral/persistent<br>    ephemeral:                   # convert to volume claim template<br>      class: string<br>      access_mode: string<br>      size: number, optional     # in megabyte<br>    persistent:                  # convert to persistent volume claim<br>      name: string</pre> | <pre>object({<br>    resources = optional(object({<br>      requests = object({<br>        cpu    = optional(number, 0.25)<br>        memory = optional(number, 256)<br>      })<br>      limits = optional(object({<br>        cpu    = optional(number, 0)<br>        memory = optional(number, 0)<br>      }))<br>    }), { requests = { cpu = 0.25, memory = 256 } })<br>    storage = optional(object({<br>      type      = optional(string, "ephemeral")<br>      ephemeral = optional(object({<br>        class       = optional(string)<br>        access_mode = optional(string, "ReadWriteOnce")<br>        size        = optional(number, 10 * 1024)<br>      }))<br>      persistent = optional(object({<br>        name = string<br>      }))<br>    }))<br>  })</pre> | `{}` | no |
-| <a name="input_replication"></a> [replication](#input\_replication) | Specify the configuration of replication deployment type.<br><br>Examples:<pre>replication:                     # four instances: one master, three read-only replicas<br>  master:<br>    resources:<br>      requests:<br>        cpu: number<br>        memory: number           # in megabyte<br>      limits:<br>        cpu: number<br>        memory: number           # in megabyte<br>    storage:                     # convert to empty dir if null<br>      type: ephemeral/persistent<br>      ephemeral:                 # convert to dynamic claim template<br>        class: string<br>        access_mode: string<br>        size: number, optional   # in megabyte<br>      persistent:                # convert to existing volume claim<br>        name: string             # the name of persistent volume claim<br>  replicas:<br>    resources:<br>      requests:<br>        cpu: number<br>        memory: number           # in megabyte<br>      limits:<br>        cpu: number<br>        memory: number           # in megabyte<br>    storage:                     # convert to empty dir if null<br>      type: ephemeral/persistent<br>      ephemeral:                 # convert to volume claim template<br>        class: string<br>        access_mode: string<br>        size: number, optional   # in megabyte<br>      persistent:                # convert to persistent volume claim<br>        name: string</pre> | <pre>object({<br>    master = optional(object({<br>      resources = optional(object({<br>        requests = object({<br>          cpu    = optional(number, 0.25)<br>          memory = optional(number, 256)<br>        })<br>        limits = optional(object({<br>          cpu    = optional(number, 0)<br>          memory = optional(number, 0)<br>        }))<br>      }), { requests = { cpu = 0.25, memory = 256 } })<br>      storage = optional(object({<br>        type      = optional(string, "ephemeral")<br>        ephemeral = optional(object({<br>          class       = optional(string)<br>          access_mode = optional(string, "ReadWriteOnce")<br>          size        = optional(number, 10 * 1024)<br>        }))<br>        persistent = optional(object({<br>          name = string<br>        }))<br>      }))<br>    }), { requests = { cpu = 0.25, memory = 256 } })<br>    replicas = optional(object({<br>      resources = optional(object({<br>        requests = object({<br>          cpu    = optional(number, 0.25)<br>          memory = optional(number, 256)<br>        })<br>        limits = optional(object({<br>          cpu    = optional(number, 0)<br>          memory = optional(number, 0)<br>        }))<br>      }), { requests = { cpu = 0.25, memory = 256 } })<br>      storage = optional(object({<br>        type      = optional(string, "ephemeral")<br>        ephemeral = optional(object({<br>          class       = optional(string)<br>          access_mode = optional(string, "ReadWriteOnce")<br>          size        = optional(number, 10 * 1024)<br>        }))<br>        persistent = optional(object({<br>          name = string<br>        }))<br>      }))<br>    }), { requests = { cpu = 0.25, memory = 256 } })<br>  })</pre> | `{}` | no |
+| <a name="input_infrastructure"></a> [infrastructure](#input\_infrastructure) | Specify the infrastructure information for deploying.<br><br>Examples:<pre>infrastructure:<br>  namespace: string, optional<br>  image_registry: string, optional<br>  domain_suffix: string, optional</pre> | <pre>object({<br>    namespace      = optional(string)<br>    image_registry = optional(string, "registry-1.docker.io")<br>    domain_suffix  = optional(string, "cluster.local")<br>  })</pre> | `{}` | no |
+| <a name="input_deployment"></a> [deployment](#input\_deployment) | Specify the deployment action, including architecture and account.<br><br>Examples:<pre>deployment:<br>  type: string, optional         # i.e. standalone, replication<br>  version: string, optional      # https://hub.docker.com/r/bitnami/redis/tags<br>  password: string, optional<br>  resources:<br>    requests:<br>      cpu: number     <br>      memory: number             # in megabyte<br>    limits:<br>      cpu: number<br>      memory: number             # in megabyte<br>  storage:                       # convert to empty_dir volume if null or dynamic volume claim template<br>    class: string<br>    size: number, optional       # in megabyte</pre> | <pre>object({<br>    type     = optional(string, "standalone")<br>    version  = optional(string, "7.0")<br>    password = optional(string)<br>    resources = optional(object({<br>      requests = object({<br>        cpu    = optional(number, 0.25)<br>        memory = optional(number, 256)<br>      })<br>      limits = optional(object({<br>        cpu    = optional(number, 0)<br>        memory = optional(number, 0)<br>      }))<br>    }), { requests = { cpu = 0.25, memory = 256 } })<br>    storage = optional(object({<br>      class = optional(string)<br>      size  = optional(number, 20 * 1024)<br>    }), { size = 20 * 1024 })<br>  })</pre> | <pre>{<br>  "resources": {<br>    "requests": {<br>      "cpu": 0.25,<br>      "memory": 256<br>    }<br>  },<br>  "storage": {<br>    "size": 20480<br>  },<br>  "type": "standalone",<br>  "version": "7.0"<br>}</pre> | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | <a name="output_context"></a> [context](#output\_context) | The input context, a map, which is used for orchestration. |
+| <a name="output_selector"></a> [selector](#output\_selector) | The selector, a map, which is used for dependencies or collaborations. |
 | <a name="output_endpoint_internal"></a> [endpoint\_internal](#output\_endpoint\_internal) | The internal endpoints, a string list, which are used for internal access. |
 | <a name="output_endpoint_internal_readonly"></a> [endpoint\_internal\_readonly](#output\_endpoint\_internal\_readonly) | The internal readonly endpoints, a string list, which are used for internal readonly access. |
 | <a name="output_password"></a> [password](#output\_password) | The password of redis service. |

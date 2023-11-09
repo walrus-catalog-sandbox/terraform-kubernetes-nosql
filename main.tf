@@ -6,7 +6,8 @@ locals {
   resource_name    = coalesce(try(var.context["resource"]["name"], null), "example")
   resource_id      = coalesce(try(var.context["resource"]["id"], null), "example_id")
 
-  architecture = coalesce(try(var.deployment.type), "replication")
+  architecture  = coalesce(var.deployment.type, "standalone")
+  domain_suffix = coalesce(var.infrastructure.domain_suffix, "cluster.local")
   namespace = coalesce(try(var.infrastructure.namespace, ""), join("-", [
     local.project_name, local.environment_name
   ]))
@@ -29,9 +30,12 @@ locals {
 # create a random password for blank password input.
 
 resource "random_password" "password" {
-  lower   = true
-  length  = 10
-  special = false
+  length      = 10
+  special     = false
+  lower       = true
+  min_lower   = 3
+  min_upper   = 3
+  min_numeric = 3
 }
 
 # create the name with a random suffix.
@@ -52,7 +56,24 @@ locals {
 #
 
 locals {
-  helm_release_values = [
+  resources = {
+    requests = try(var.deployment.resources.requests != null, false) ? {
+      for k, v in var.deployment.resources.requests : k => "%{if k == "memory"}${v}Mi%{else}${v}%{endif}"
+      if v != null && v > 0
+    } : null
+    limits = try(var.deployment.resources.limits != null, false) ? {
+      for k, v in var.deployment.resources.limits : k => "%{if k == "memory"}${v}Mi%{else}${v}%{endif}"
+      if v != null && v > 0
+    } : null
+  }
+  persistence = {
+    enabled      = try(var.deployment.storage != null, false)
+    storageClass = try(var.deployment.storage.class, "")
+    accessModes  = ["ReadWriteOnce"]
+    size         = try(format("%dMi", var.deployment.storage.size), "20480Mi")
+  }
+
+  values = [
     # basic configuration.
 
     {
@@ -65,11 +86,12 @@ locals {
       fullnameOverride  = local.name
       commonAnnotations = local.annotations
       commonLabels      = local.labels
+      clusterDomain     = local.domain_suffix
 
       # redis image parameters: https://github.com/bitnami/charts/tree/main/bitnami/redis#redis-image-parameters
       image = {
         repository = "bitnami/redis"
-        tag        = coalesce(var.deployment.version, "7.2.3")
+        tag        = coalesce(var.deployment.version, "7.0")
       }
 
       # redis common parameters: https://github.com/bitnami/charts/tree/main/bitnami/redis#redis-common-configuration-parameters
@@ -81,23 +103,8 @@ locals {
     local.architecture == "standalone" ? {
       # redis master parameters: https://github.com/bitnami/charts/tree/main/bitnami/redis#redis-master-configuration-parameters
       master = {
-        resources = {
-          requests = try(var.standalone.resources.requests != null, false) ? {
-            for k, v in var.standalone.resources.requests : k => "%{if k == "memory"}${v}Mi%{else}${v}%{endif}"
-            if v != null && v > 0
-          } : null
-          limits = try(var.standalone.resources.limits != null, false) ? {
-            for k, v in var.standalone.resources.limits : k => "%{if k == "memory"}${v}Mi%{else}${v}%{endif}"
-            if v != null && v > 0
-          } : null
-        }
-        persistence = {
-          enabled       = try(var.standalone.storage != null, false)
-          storageClass  = try(var.standalone.storage.ephemeral.class, "")
-          accessModes   = [try(var.standalone.storage.ephemeral.access_mode, "ReadWriteOnce")]
-          size          = try(format("%dMi", var.standalone.storage.ephemeral.size), "8Gi")
-          existingClaim = try(var.standalone.storage.persistent.name, "")
-        }
+        resources   = local.resources
+        persistence = local.persistence
       }
     } : null,
 
@@ -106,44 +113,14 @@ locals {
     local.architecture == "replication" ? {
       # redis master parameters: https://github.com/bitnami/charts/tree/main/bitnami/redis#redis-master-configuration-parameters
       master = {
-        resources = {
-          requests = try(var.replication.master.resources.requests != null, false) ? {
-            for k, v in var.replication.master.resources.requests : k => "%{if k == "memory"}${v}Mi%{else}${v}%{endif}"
-            if v != null && v > 0
-          } : null
-          limits = try(var.replication.master.resources.limits != null, false) ? {
-            for k, v in var.replication.master.resources.limits : k => "%{if k == "memory"}${v}Mi%{else}${v}%{endif}"
-            if v != null && v > 0
-          } : null
-        }
-        persistence = {
-          enabled       = try(var.replication.master.storage != null, false)
-          storageClass  = try(var.replication.master.storage.ephemeral.class, "")
-          accessModes   = [try(var.replication.master.storage.ephemeral.access_mode, "ReadWriteOnce")]
-          size          = try(format("%dMi", var.replication.master.storage.ephemeral.size), "8Gi")
-          existingClaim = try(var.replication.master.storage.persistent.name, "")
-        }
+        resources   = local.resources
+        persistence = local.persistence
       }
       # redis replica parameters: https://github.com/bitnami/charts/tree/main/bitnami/redis#redis-replicas-configuration-parameters
-      replicas = {
-        resources = {
-          requests = try(var.replication.replicas.resources.requests != null, false) ? {
-            for k, v in var.replication.replicas.resources.requests : k =>
-            "%{if k == "memory"}${v}Mi%{else}${v}%{endif}"
-            if v != null && v > 0
-          } : null
-          limits = try(var.replication.replicas.resources.limits != null, false) ? {
-            for k, v in var.replication.replicas.resources.limits : k => "%{if k == "memory"}${v}Mi%{else}${v}%{endif}"
-            if v != null && v > 0
-          } : null
-        }
-        persistence = {
-          enabled       = try(var.replication.replicas.storage != null, false)
-          storageClass  = try(var.replication.replicas.storage.ephemeral.class, "")
-          accessModes   = [try(var.replication.replicas.storage.ephemeral.access_mode, "ReadWriteOnce")]
-          size          = try(format("%dMi", var.replication.replicas.storage.ephemeral.size), "8Gi")
-          existingClaim = try(var.replication.replicas.storage.persistent.name, "")
-        }
+      replica = {
+        replicaCount = 1
+        resources    = local.resources
+        persistence  = local.persistence
       }
     } : null,
   ]
@@ -157,7 +134,7 @@ resource "helm_release" "redis" {
   name        = local.name
 
   values = [
-    for c in local.helm_release_values : yamlencode(c)
+    for c in local.values : yamlencode(c)
     if c != null
   ]
 
