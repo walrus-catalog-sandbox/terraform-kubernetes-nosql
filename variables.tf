@@ -52,66 +52,73 @@ EOF
 # Deployment Fields
 #
 
-variable "deployment" {
+variable "architecture" {
   description = <<-EOF
-Specify the deployment action, including architecture and account.
+Specify the deployment architecture, select from standalone or replication.
+EOF
+  type        = string
+  default     = "standalone"
+  validation {
+    condition     = var.architecture == null || contains(["standalone", "replication"], var.architecture)
+    error_message = "Invalid architecture"
+  }
+}
+
+variable "engine_version" {
+  description = <<-EOF
+Specify the deployment engine version, select from https://hub.docker.com/r/bitnami/redis/tags.
+EOF
+  type        = string
+  default     = "7.0"
+}
+
+variable "password" {
+  description = <<-EOF
+Specify the account password.
+EOF
+  type        = string
+  default     = null
+  validation {
+    condition     = var.password == null || can(regex("^[A-Za-z0-9\\!#\\$%\\^&\\*\\(\\)_\\+\\-=]{8,32}", var.password))
+    error_message = "Invalid password"
+  }
+}
+
+variable "resources" {
+  description = <<-EOF
+Specify the computing resources.
 
 Examples:
 ```
-deployment:
-  type: string, optional         # i.e. standalone, replication
-  version: string, optional      # https://hub.docker.com/r/bitnami/redis/tags
-  password: string, optional
-  resources:
-    requests:
-      cpu: number     
-      memory: number             # in megabyte
-    limits:
-      cpu: number
-      memory: number             # in megabyte
-  storage:                       # convert to empty_dir volume if null or dynamic volume claim template
-    class: string
-    size: number, optional       # in megabyte
+resources:
+  cpu: number, optional
+  memory: number, optioanl       # in megabyte
 ```
 EOF
   type = object({
-    type     = optional(string, "standalone")
-    version  = optional(string, "7.0")
-    password = optional(string)
-    resources = optional(object({
-      requests = object({
-        cpu    = optional(number, 0.25)
-        memory = optional(number, 256)
-      })
-      limits = optional(object({
-        cpu    = optional(number, 0)
-        memory = optional(number, 0)
-      }))
-    }), { requests = { cpu = 0.25, memory = 256 } })
-    storage = optional(object({
-      class = optional(string)
-      size  = optional(number, 20 * 1024)
-    }), { size = 20 * 1024 })
+    cpu    = number
+    memory = number
   })
   default = {
-    version = "7.0"
-    type    = "standalone"
-    resources = {
-      requests = {
-        cpu    = 0.25
-        memory = 256
-      }
-    }
-    storage = {
-      size = 20 * 1024
-    }
+    cpu    = 0.25
+    memory = 256
   }
-  validation {
-    condition     = var.deployment.type == null || contains(["standalone", "replication"], var.deployment.type)
-    error_message = "Invalid type"
-  }
-  validation {
-    condition     = var.deployment.password == null || can(regex("^[A-Za-z0-9\\!#\\$%\\^&\\*\\(\\)_\\+\\-=]{8,32}", var.deployment.password))
-    error_message = "Invalid password"
-  }
+}
+
+variable "storage" {
+  description = <<-EOF
+Specify the storage resources.
+
+Examples:
+```
+storage:                         # convert to empty_dir volume or dynamic volume claim template
+  class: string, optional
+  size: number, optional         # in megabyte
+```
+EOF
+  type = object({
+    class = optional(string)
+    size  = optional(number, 20 * 1024)
+  })
+  default = null
 }

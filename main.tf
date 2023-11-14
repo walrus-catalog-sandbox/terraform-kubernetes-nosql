@@ -6,11 +6,12 @@ locals {
   resource_name    = coalesce(try(var.context["resource"]["name"], null), "example")
   resource_id      = coalesce(try(var.context["resource"]["id"], null), "example_id")
 
-  architecture  = coalesce(var.deployment.type, "standalone")
-  domain_suffix = coalesce(var.infrastructure.domain_suffix, "cluster.local")
   namespace = coalesce(try(var.infrastructure.namespace, ""), join("-", [
     local.project_name, local.environment_name
   ]))
+  image_registry = coalesce(var.infrastructure.image_registry, "registry-1.docker.io")
+  domain_suffix  = coalesce(var.infrastructure.domain_suffix, "cluster.local")
+
   annotations = {
     "walrus.seal.io/project-id"     = local.project_id
     "walrus.seal.io/environment-id" = local.environment_id
@@ -21,6 +22,8 @@ locals {
     "walrus.seal.io/environment-name" = local.environment_name
     "walrus.seal.io/resource-name"    = local.resource_name
   }
+
+  architecture = coalesce(var.architecture, "standalone")
 }
 
 #
@@ -48,7 +51,7 @@ resource "random_string" "name_suffix" {
 
 locals {
   name     = join("-", [local.resource_name, random_string.name_suffix.result])
-  password = coalesce(var.deployment.password, random_password.password.result)
+  password = coalesce(var.password, random_password.password.result)
 }
 
 #
@@ -57,20 +60,19 @@ locals {
 
 locals {
   resources = {
-    requests = try(var.deployment.resources.requests != null, false) ? {
-      for k, v in var.deployment.resources.requests : k => "%{if k == "memory"}${v}Mi%{else}${v}%{endif}"
-      if v != null && v > 0
+    requests = try(var.resources != null, false) ? {
+      cpu    = var.resources.cpu
+      memory = "${var.resources.memory}Mi"
     } : null
-    limits = try(var.deployment.resources.limits != null, false) ? {
-      for k, v in var.deployment.resources.limits : k => "%{if k == "memory"}${v}Mi%{else}${v}%{endif}"
-      if v != null && v > 0
+    limits = try(var.resources != null, false) ? {
+      memory = "${var.resources.memory}Mi"
     } : null
   }
   persistence = {
-    enabled      = try(var.deployment.storage != null, false)
-    storageClass = try(var.deployment.storage.class, "")
+    enabled      = try(var.storage != null, false)
+    storageClass = try(var.storage.class, "")
     accessModes  = ["ReadWriteOnce"]
-    size         = try(format("%dMi", var.deployment.storage.size), "20480Mi")
+    size         = try(format("%dMi", var.storage.size), "20480Mi")
   }
 
   values = [
@@ -79,7 +81,7 @@ locals {
     {
       # global parameters: https://github.com/bitnami/charts/tree/main/bitnami/redis#global-parameters
       global = {
-        image_registry = coalesce(var.infrastructure.image_registry, "registry-1.docker.io")
+        image_registry = local.image_registry
       }
 
       # common parameters: https://github.com/bitnami/charts/tree/main/bitnami/redis#common-parameters
@@ -91,7 +93,7 @@ locals {
       # redis image parameters: https://github.com/bitnami/charts/tree/main/bitnami/redis#redis-image-parameters
       image = {
         repository = "bitnami/redis"
-        tag        = coalesce(var.deployment.version, "7.0")
+        tag        = coalesce(var.engine_version, "7.0")
       }
 
       # redis common parameters: https://github.com/bitnami/charts/tree/main/bitnami/redis#redis-common-configuration-parameters

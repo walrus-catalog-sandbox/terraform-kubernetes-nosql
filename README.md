@@ -14,11 +14,8 @@ module "redis" {
     namespace = "default"
   }
 
-  deployment = {
-    type     = "replication"
-    version  = "7.0"          # https://hub.docker.com/r/bitnami/redis/tags
-    password = "..."
-  }
+  architecture   = "replication"
+  engine_version = "7.0"         # https://hub.docker.com/r/bitnami/redis/tags
 }
 ```
 
@@ -65,7 +62,11 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_context"></a> [context](#input\_context) | Receive contextual information. When Walrus deploys, Walrus will inject specific contextual information into this field.<br><br>Examples:<pre>context:<br>  project:<br>    name: string<br>    id: string<br>  environment:<br>    name: string<br>    id: string<br>  resource:<br>    name: string<br>    id: string</pre> | `map(any)` | `{}` | no |
 | <a name="input_infrastructure"></a> [infrastructure](#input\_infrastructure) | Specify the infrastructure information for deploying.<br><br>Examples:<pre>infrastructure:<br>  namespace: string, optional<br>  image_registry: string, optional<br>  domain_suffix: string, optional</pre> | <pre>object({<br>    namespace      = optional(string)<br>    image_registry = optional(string, "registry-1.docker.io")<br>    domain_suffix  = optional(string, "cluster.local")<br>  })</pre> | `{}` | no |
-| <a name="input_deployment"></a> [deployment](#input\_deployment) | Specify the deployment action, including architecture and account.<br><br>Examples:<pre>deployment:<br>  type: string, optional         # i.e. standalone, replication<br>  version: string, optional      # https://hub.docker.com/r/bitnami/redis/tags<br>  password: string, optional<br>  resources:<br>    requests:<br>      cpu: number     <br>      memory: number             # in megabyte<br>    limits:<br>      cpu: number<br>      memory: number             # in megabyte<br>  storage:                       # convert to empty_dir volume if null or dynamic volume claim template<br>    class: string<br>    size: number, optional       # in megabyte</pre> | <pre>object({<br>    type     = optional(string, "standalone")<br>    version  = optional(string, "7.0")<br>    password = optional(string)<br>    resources = optional(object({<br>      requests = object({<br>        cpu    = optional(number, 0.25)<br>        memory = optional(number, 256)<br>      })<br>      limits = optional(object({<br>        cpu    = optional(number, 0)<br>        memory = optional(number, 0)<br>      }))<br>    }), { requests = { cpu = 0.25, memory = 256 } })<br>    storage = optional(object({<br>      class = optional(string)<br>      size  = optional(number, 20 * 1024)<br>    }), { size = 20 * 1024 })<br>  })</pre> | <pre>{<br>  "resources": {<br>    "requests": {<br>      "cpu": 0.25,<br>      "memory": 256<br>    }<br>  },<br>  "storage": {<br>    "size": 20480<br>  },<br>  "type": "standalone",<br>  "version": "7.0"<br>}</pre> | no |
+| <a name="input_architecture"></a> [architecture](#input\_architecture) | Specify the deployment architecture, select from standalone or replication. | `string` | `"standalone"` | no |
+| <a name="input_engine_version"></a> [engine\_version](#input\_engine\_version) | Specify the deployment engine version, select from https://hub.docker.com/r/bitnami/redis/tags. | `string` | `"7.0"` | no |
+| <a name="input_password"></a> [password](#input\_password) | Specify the account password. | `string` | `null` | no |
+| <a name="input_resources"></a> [resources](#input\_resources) | Specify the computing resources.<br><br>Examples:<pre>resources:<br>  cpu: number, optional<br>  memory: number, optioanl       # in megabyte</pre> | <pre>object({<br>    cpu    = number<br>    memory = number<br>  })</pre> | <pre>{<br>  "cpu": 0.25,<br>  "memory": 256<br>}</pre> | no |
+| <a name="input_storage"></a> [storage](#input\_storage) | Specify the storage resources.<br><br>Examples:<pre>storage:                         # convert to empty_dir volume or dynamic volume claim template<br>  class: string, optional<br>  size: number, optional         # in megabyte</pre> | <pre>object({<br>    class = optional(string)<br>    size  = optional(number, 20 * 1024)<br>  })</pre> | `null` | no |
 
 ## Outputs
 

@@ -36,20 +36,12 @@ module "this" {
     namespace = kubernetes_namespace_v1.example.metadata[0].name
   }
 
-  deployment = {
-    resources = {
-      requests = {
-        cpu    = 1
-        memory = 1024
-      }
-      limits = {
-        cpu    = 2
-        memory = 2048
-      }
-    }
-    storage = {
-      size = 20 * 1024
-    }
+  resources = {
+    cpu    = 2
+    memory = 2048
+  }
+  storage = {
+    size = 20 * 1024
   }
 }
 

@@ -15,7 +15,7 @@ output "endpoint_internal" {
 
 output "endpoint_internal_readonly" {
   description = "The internal readonly endpoints, a string list, which are used for internal readonly access."
-  value       = var.deployment.type == "replication" ? [format("%s-replicas.%s.svc.%s:6379", local.name, local.namespace, local.domain_suffix)] : []
+  value       = var.architecture == "replication" ? [format("%s-replicas.%s.svc.%s:6379", local.name, local.namespace, local.domain_suffix)] : []
 }
 
 output "password" {
