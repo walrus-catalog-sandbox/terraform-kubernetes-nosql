@@ -29,9 +29,13 @@ components:
           default: {}
           additionalProperties:
             type: object
+            x-walrus-ui:
+              colSpan: 12
           x-walrus-ui:
+            colSpan: 12
             group: Basic
             hidden: true
+            order: 1
         infrastructure:
           title: Infrastructure
           type: object
@@ -45,6 +49,7 @@ components:
               image_registry: string, optional
               domain_suffix: string, optional
             ```
+          default: {}
           properties:
             domain_suffix:
               default: cluster.local
@@ -57,8 +62,12 @@ components:
             namespace:
               title: Namespace
               type: string
+              x-walrus-ui:
+                hidden: true
           x-walrus-ui:
+            colSpan: 12
             group: Basic
+            order: 2
         architecture:
           title: Architecture
           type: string
@@ -70,6 +79,7 @@ components:
           - replication
           x-walrus-ui:
             group: Basic
+            order: 3
         replication_readonly_replicas:
           title: Replication Readonly Replicas
           type: number
@@ -82,6 +92,7 @@ components:
           - 5
           x-walrus-ui:
             group: Basic
+            order: 4
             showIf: architecture=replication
         engine_version:
           title: Engine Version
@@ -91,14 +102,17 @@ components:
           default: "7.0"
           x-walrus-ui:
             group: Basic
+            order: 5
         password:
           title: Password
           type: string
           description: |
             Specify the account password.
+          format: password
           writeOnly: true
           x-walrus-ui:
             group: Basic
+            order: 6
         resources:
           title: Resources
           type: object
@@ -125,7 +139,9 @@ components:
               title: Memory
               type: number
           x-walrus-ui:
+            colSpan: 12
             group: Basic
+            order: 7
         storage:
           title: Storage
           type: object
@@ -147,4 +163,6 @@ components:
               title: Size
               type: number
           x-walrus-ui:
+            colSpan: 12
             group: Basic
+            order: 8
