@@ -55,15 +55,20 @@ components:
               default: cluster.local
               title: Domain Suffix
               type: string
+              x-walrus-ui:
+                order: 3
             image_registry:
               default: registry-1.docker.io
               title: Image Registry
               type: string
+              x-walrus-ui:
+                order: 2
             namespace:
               title: Namespace
               type: string
               x-walrus-ui:
                 hidden: true
+                order: 1
           x-walrus-ui:
             colSpan: 12
             group: Basic
