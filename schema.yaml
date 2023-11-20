@@ -55,12 +55,16 @@ components:
               default: cluster.local
               title: Domain Suffix
               type: string
+              description: |
+                Specify the domain name of the Kubernetes cluster.
               x-walrus-ui:
                 order: 3
             image_registry:
               default: registry-1.docker.io
               title: Image Registry
               type: string
+              description: |
+                Specify the redis image registry. 
               x-walrus-ui:
                 order: 2
             namespace:
@@ -140,9 +144,13 @@ components:
             cpu:
               title: Cpu
               type: number
+              description: |
+                Specify the cpu resources. Unit is core.
             memory:
               title: Memory
               type: number
+              description: |
+                Specify the memory resources. Unit is megabyte.
           x-walrus-ui:
             colSpan: 12
             group: Basic
@@ -163,10 +171,14 @@ components:
             class:
               title: Class
               type: string
+              description: |
+                Specify the storage class. If not specified, it will use the default provisioner.
             size:
               default: 20480
               title: Size
               type: number
+              description: |
+                Specify the storage size. Unit is megabyte.
           x-walrus-ui:
             colSpan: 12
             group: Basic
