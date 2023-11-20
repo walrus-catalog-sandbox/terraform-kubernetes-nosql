@@ -64,7 +64,7 @@ components:
               title: Image Registry
               type: string
               description: |
-                Specify the redis image registry. 
+                Specify the image registry to pull the bitnami/redis image, default is `registry-1.docker.io`.
               x-walrus-ui:
                 order: 2
             namespace:
@@ -116,7 +116,7 @@ components:
           title: Password
           type: string
           description: |
-            Specify the account password.
+            Specify the account password. If not specified, it will generate a random password.
           format: password
           writeOnly: true
           x-walrus-ui:
@@ -142,12 +142,12 @@ components:
           - memory
           properties:
             cpu:
-              title: Cpu
+              title: Cpu(Core)
               type: number
               description: |
                 Specify the cpu resources. Unit is core.
             memory:
-              title: Memory
+              title: Memory(MiB)
               type: number
               description: |
                 Specify the memory resources. Unit is megabyte.
@@ -175,7 +175,7 @@ components:
                 Specify the storage class. If not specified, it will use the default provisioner.
             size:
               default: 20480
-              title: Size
+              title: Size(MiB)
               type: number
               description: |
                 Specify the storage size. Unit is megabyte.
