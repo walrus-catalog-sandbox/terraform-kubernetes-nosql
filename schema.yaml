@@ -137,9 +137,6 @@ components:
           default:
             cpu: 0.25
             memory: 256
-          required:
-          - cpu
-          - memory
           properties:
             cpu:
               title: Cpu(Core)
