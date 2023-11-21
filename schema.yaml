@@ -12,20 +12,6 @@ components:
           type: object
           description: |
             Receive contextual information. When Walrus deploys, Walrus will inject specific contextual information into this field.
-
-            Examples:
-            ```
-            context:
-              project:
-                name: string
-                id: string
-              environment:
-                name: string
-                id: string
-              resource:
-                name: string
-                id: string
-            ```
           default: {}
           additionalProperties:
             type: object
@@ -33,7 +19,7 @@ components:
               colSpan: 12
           x-walrus-ui:
             colSpan: 12
-            group: Basic
+            group: Advanced
             hidden: true
             order: 1
         infrastructure:
@@ -41,14 +27,6 @@ components:
           type: object
           description: |
             Specify the infrastructure information for deploying.
-
-            Examples:
-            ```
-            infrastructure:
-              namespace: string, optional
-              image_registry: string, optional
-              domain_suffix: string, optional
-            ```
           default: {}
           properties:
             domain_suffix:
@@ -75,7 +53,7 @@ components:
                 order: 1
           x-walrus-ui:
             colSpan: 12
-            group: Basic
+            group: Advanced
             order: 2
         architecture:
           title: Architecture
@@ -114,9 +92,12 @@ components:
             order: 5
         password:
           title: Password
+          maxLength: 32
+          minLength: 16
           type: string
           description: |
-            Specify the account password. If not specified, it will generate a random password.
+            Specify the account password. The password must be 16-32 characters long and start with any letter, number, or the following symbols: ! # $ % ^ & * ( ) _ + - =.
+            If not specified, it will generate a random password.
           format: password
           writeOnly: true
           x-walrus-ui:
@@ -127,13 +108,6 @@ components:
           type: object
           description: |
             Specify the computing resources.
-
-            Examples:
-            ```
-            resources:
-              cpu: number, optional
-              memory: number, optional       # in megabyte
-            ```
           default:
             cpu: 0.25
             memory: 256
@@ -159,13 +133,6 @@ components:
           type: object
           description: |
             Specify the storage resources.
-
-            Examples:
-            ```
-            storage:                         # convert to empty_dir volume or dynamic volume claim template
-              class: string, optional
-              size: number, optional         # in megabyte
-            ```
           properties:
             class:
               title: Class
@@ -182,3 +149,7 @@ components:
             colSpan: 12
             group: Basic
             order: 8
+      x-walrus-ui:
+        groupOrder: 
+        - Basic
+        - Advanced

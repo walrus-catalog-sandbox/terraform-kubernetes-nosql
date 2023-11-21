@@ -59,7 +59,7 @@ EOF
   type        = string
   default     = "standalone"
   validation {
-    condition     = var.architecture == null || contains(["standalone", "replication"], var.architecture)
+    condition     = contains(["standalone", "replication"], var.architecture)
     error_message = "Invalid architecture"
   }
 }
@@ -86,13 +86,14 @@ EOF
 
 variable "password" {
   description = <<-EOF
-Specify the account password.
+Specify the account password. The password must be 16-32 characters long and start with any letter, number, or the following symbols: ! # $ % ^ & * ( ) _ + - =.
+If not specified, it will generate a random password.
 EOF
   type        = string
   default     = null
   sensitive   = true
   validation {
-    condition     = var.password == null || can(regex("^[A-Za-z0-9\\!#\\$%\\^&\\*\\(\\)_\\+\\-=]{8,32}", var.password))
+    condition     = var.password == null || can(regex("^[A-Za-z0-9\\!#\\$%\\^&\\*\\(\\)_\\+\\-=]{16,32}", var.password))
     error_message = "Invalid password"
   }
 }
