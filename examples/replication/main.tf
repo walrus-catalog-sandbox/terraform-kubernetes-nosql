@@ -34,7 +34,7 @@ resource "kubernetes_namespace_v1" "example" {
 }
 
 resource "random_password" "password" {
-  length  = 10
+  length  = 16
   lower   = true
   special = false
 }
@@ -59,18 +59,34 @@ output "context" {
   value = module.this.context
 }
 
-output "selector" {
-  value = module.this.selector
+output "refer" {
+  value = nonsensitive(module.this.refer)
 }
 
-output "endpoint_internal" {
-  value = module.this.endpoint_internal
+output "connection" {
+  value = module.this.connection
 }
 
-output "endpoint_internal_readonly" {
-  value = module.this.endpoint_internal_readonly
+output "connection_without_port" {
+  value = module.this.connection_without_port
+}
+
+output "connection_readonly" {
+  value = module.this.connection_readonly
+}
+
+output "connection_without_port_readonly" {
+  value = module.this.connection_without_port_readonly
 }
 
 output "password" {
   value = nonsensitive(module.this.password)
+}
+
+output "endpoints" {
+  value = module.this.endpoints
+}
+
+output "endpoints_readonly" {
+  value = module.this.endpoints_readonly
 }
