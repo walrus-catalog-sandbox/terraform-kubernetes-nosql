@@ -120,7 +120,7 @@ locals {
       }
       # redis replica parameters: https://github.com/bitnami/charts/tree/main/bitnami/redis#redis-replicas-configuration-parameters
       replica = {
-        replicaCount = coalesce(var.replication_readonly_replicas, 1)
+        replicaCount = var.replication_readonly_replicas == 0 ? 1 : var.replication_readonly_replicas
         resources    = local.resources
         persistence  = local.persistence
       }
