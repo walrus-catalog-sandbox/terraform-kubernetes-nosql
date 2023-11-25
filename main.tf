@@ -75,6 +75,9 @@ locals {
     accessModes  = ["ReadWriteOnce"]
     size         = try(format("%dMi", var.storage.size), "20480Mi")
   }
+  service = {
+    type = try(coalesce(var.infrastructure.service_type, "NodePort"), "NodePort")
+  }
 
   values = [
     # basic configuration.
@@ -108,6 +111,7 @@ locals {
       master = {
         resources   = local.resources
         persistence = local.persistence
+        service     = local.service
       }
     } : null,
 
@@ -118,12 +122,14 @@ locals {
       master = {
         resources   = local.resources
         persistence = local.persistence
+        service     = local.service
       }
       # redis replica parameters: https://github.com/bitnami/charts/tree/main/bitnami/redis#redis-replicas-configuration-parameters
       replica = {
         replicaCount = var.replication_readonly_replicas == 0 ? 1 : var.replication_readonly_replicas
         resources    = local.resources
         persistence  = local.persistence
+        service      = local.service
       }
     } : null,
   ]
