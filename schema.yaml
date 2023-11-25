@@ -119,7 +119,7 @@ components:
             Specify the computing resources.
           default:
             cpu: 0.25
-            memory: 256
+            memory: 1024
           nullable: true
           properties:
             cpu:
@@ -133,8 +133,8 @@ components:
             memory:
               title: Memory(MiB)
               type: number
-              default: 256
-              minimum: 128
+              default: 1024
+              minimum: 512
               nullable: true
               description: |
                 Specify the memory resources. Unit is megabyte.
