@@ -169,7 +169,7 @@ components:
                 Specify the storage class. If not specified, it will use the default provisioner.
               nullable: true
             size:
-              default: 20480
+              default: 10240
               minimum: 1024
               title: Size(MiB)
               type: number
