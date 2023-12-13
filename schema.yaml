@@ -4,10 +4,10 @@ info:
 components:
   schemas:
     variables:
-      required: 
+      type: object
+      required:
       - architecture
       - engine_version
-      type: object
       properties:
         context:
           title: Context
@@ -33,44 +33,44 @@ components:
           default: {}
           nullable: true
           properties:
-            service_type:
-              description: |
-                Specify the service type of the Kubernetes cluster, default is `NodePort`.
-              default: "NodePort"
-              nullable: true
-              title: Service Type
-              type: string
-              enum:
-              - NodePort
-              - LoadBalancer
-              - ClusterIP
-              x-walrus-ui:
-                order: 4
             domain_suffix:
               default: cluster.local
-              title: Domain Suffix
-              type: string
               description: |
                 Specify the domain name of the Kubernetes cluster.
               nullable: true
+              title: Domain Suffix
+              type: string
               x-walrus-ui:
                 order: 3
             image_registry:
               default: registry-1.docker.io
-              title: Image Registry
-              type: string
               description: |
                 Specify the image registry to pull the bitnami/redis image, default is `registry-1.docker.io`.
               nullable: true
+              title: Image Registry
+              type: string
               x-walrus-ui:
                 order: 2
             namespace:
+              nullable: true
               title: Namespace
               type: string
-              nullable: true
               x-walrus-ui:
                 hidden: true
                 order: 1
+            service_type:
+              default: NodePort
+              description: |
+                Specify the service type of the Kubernetes cluster, default is `NodePort`.
+              enum:
+              - NodePort
+              - LoadBalancer
+              - ClusterIP
+              nullable: true
+              title: Service Type
+              type: string
+              x-walrus-ui:
+                order: 4
           x-walrus-ui:
             colSpan: 12
             group: Advanced
@@ -84,6 +84,7 @@ components:
           enum:
           - standalone
           - replication
+          nullable: true
           x-walrus-ui:
             group: Basic
             order: 3
@@ -93,11 +94,11 @@ components:
           description: |
             Specify the number of read-only replicas under the replication deployment.
           default: 1
-          nullable: true
           enum:
           - 1
           - 3
           - 5
+          nullable: true
           x-walrus-ui:
             group: Basic
             order: 4
@@ -108,20 +109,21 @@ components:
           description: |
             Specify the deployment engine version, select from https://hub.docker.com/r/bitnami/redis/tags.
           default: "7.0"
+          nullable: true
           x-walrus-ui:
             group: Basic
             order: 5
         password:
           title: Password
-          maxLength: 32
-          minLength: 16
           type: string
           description: |
             Specify the account password. The password must be 16-32 characters long and start with any letter, number, or the following symbols: ! # $ % ^ & * ( ) _ + - =.
             If not specified, it will generate a random password.
-          nullable: true
           format: password
+          nullable: true
           writeOnly: true
+          minLength: 16
+          maxLength: 32
           x-walrus-ui:
             group: Basic
             order: 6
@@ -136,21 +138,25 @@ components:
           nullable: true
           properties:
             cpu:
-              title: Cpu(Core)
-              type: number
               default: 0.25
-              minimum: 0.1
-              nullable: true
               description: |
                 Specify the cpu resources. Unit is core.
-            memory:
-              title: Memory(MiB)
-              type: number
-              default: 1024
-              minimum: 512
+              minimum: 0.1
               nullable: true
+              title: Cpu(Core)
+              type: number
+              x-walrus-ui:
+                order: 1
+            memory:
+              default: 1024
               description: |
                 Specify the memory resources. Unit is megabyte.
+              minimum: 512
+              nullable: true
+              title: Memory(MiB)
+              type: number
+              x-walrus-ui:
+                order: 2
           x-walrus-ui:
             colSpan: 12
             group: Basic
@@ -163,24 +169,28 @@ components:
           nullable: true
           properties:
             class:
-              title: Class
-              type: string
               description: |
                 Specify the storage class. If not specified, it will use the default provisioner.
               nullable: true
+              title: Class
+              type: string
+              x-walrus-ui:
+                order: 1
             size:
               default: 10240
-              minimum: 1024
-              title: Size(MiB)
-              type: number
               description: |
                 Specify the storage size. Unit is megabyte.
+              minimum: 1024
               nullable: true
+              title: Size(MiB)
+              type: number
+              x-walrus-ui:
+                order: 2
           x-walrus-ui:
             colSpan: 12
             group: Basic
             order: 8
       x-walrus-ui:
-        groupOrder: 
+        groupOrder:
         - Basic
         - Advanced
