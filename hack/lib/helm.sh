@@ -63,7 +63,7 @@ function seal::helm::pull() {
   local args=()
   if [[ "${target%%:*}" == "${target%:*}" ]]; then
     args=("${target}")
-  else
+  else 
     args=(
       "${target%:*}"
       "--version=${target##*:}"
